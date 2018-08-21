@@ -1,0 +1,55 @@
+this macro is intended to convert the z-stack, multichannel images from .lif files into
+individual tif files in a batch method. 
+
+After (or before) starting this macro, bring the .lif file to imageJ and open all of the
+images you want to save as individual tiff files. It will have a popup asking you to do
+this as well.
+
+It will ask  you to select a folder to save the individual .tiff files in.
+
+The default options are:
+
+"co-culture"
+	four channels in the original uncompressed image
+	z stack original image
+	not compressed to RGB format for final image
+	Arrangement of channels is 1-Cyan, 2-Blue, 3-Green, 4-Red
+	1024x1024 images	
+
+"normal E18"
+	three channels in the original uncompressed image
+	z stack original image
+	Compressed to RGB format for final image
+	Arrangement of channels is 1-Green, 2-Red, 3-Blue
+	1024x1024 images	
+
+"a-synuclein project"
+	four channels in the original uncompressed image
+	z stack original image
+	not compressed to RGB format for final image
+	Arrangement of channels is 1-Cyan, 2-Blue, 3-Green, 4-Red
+	2048x2048 images
+
+"Custom"
+	lets you modify each of the parameters listed above (except image size)
+	asks for:
+	-initial # of channels
+	-# of channels desired in final image
+	-whether or not the final image should be flat
+	-if you want to add a suffix to all of them (ex: "...tif_flat")
+	-which color is in which channel
+	-which colors/channels should be in the final image
+	-if you want to change the color of individual channels (ex: cyan->blue for an 
+	RGB final image)
+
+Once the parameters are set, it will go through the open images and ask you to rename them.
+This is to remove the .lif filename from the individual image name if desired. 
+If you want to keep the .lif filename, just hit "ok" until all of the images are
+processed.
+
+Each image will be proccessed in the same way. The purpose of this is to expedite
+image import from .lif files and allow for modification of said images in a customized
+and consistent way without manually doing it.
+
+frequently used in image analysis done for multiple projects - useful for
+a broad range of applications.
