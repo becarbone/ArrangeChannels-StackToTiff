@@ -1,48 +1,70 @@
 var c, s, i, imagedir, title, numChan, finChan, flat, colArray, chanArray, channels, ztack;
 var namen, channels, stacks, channel1, channel2, channel3, channel4, colors, title, newTitle;
 var settings, henny;
+
+waitForUser("Open your .lif file in imageJ");
+
 imagedir = getDirectory("Folder for images");
-Dialog.create("presets");
-	settings = newArray("co-culture","normal E18","a-synuclein project","custom");
-	Dialog.addChoice("Which setting?",settings);
-Dialog.show;
-henny = Dialog.getChoice();
-if(henny == "co-culture") {
-	numChan = 4;
-	finChan = 4;
-	flat = "no";
-	namen = "";
-	ztack = true;
-	c = "1234";
-	colArray = newArray("Cyan","Blue","Green","Red");
-}
-else if (henny == "normal E18") {
-	numChan = 3;
-	finChan = 3;
-	flat = "yes";
-	namen = "";
-	ztack = true;
-	c = "123";
-	colArray = newArray("Green","Red","Blue");
-}
+henny = "custom";
 
-if(henny == "a-synuclein project") {
-	run("Properties...", "channels=4 slices=6 frames=1 unit=micron pixel_width=0.1803752 pixel_height=0.1803752 voxel_depth=0.2891800");
-	numChan = 4;
-	finChan = 4;
-	flat = "no";
-	namen = "";
-	ztack = true;
-	c = "1234";
-	colArray = newArray("Cyan","Blue","Green","Red");
-}
+//This macro is intended to take images opened from a .lif file that all have the same #channels (though I'm sure there's a way to make it more flexible)
+//and process them all in the same manner.
+//i.e. a set of four channel images that need one channel removed and one channel changed color for each image
 
-else if (henny == "custom")	{
+//the commented out code below was a set of parameters for experiments that were frequently repeated and I got tired of 
+//inputting the settings each time, feel free to re-implement if need be, or make new ones.
+//just change the contents of the "settings" array to whatever strings you want, and use the examples below to 
+//guide you through the options you need to have. Just be sure to keep the "custom" setting, which allows
+//you to manually input settings
+
+//Dialog.create("presets");
+//	settings = newArray("co-culture","normal E18","a-synuclein project","custom");
+//	Dialog.addChoice("Which setting?",settings);
+//Dialog.show;
+//henny = Dialog.getChoice();
+//if(henny == "co-culture") {
+//	numChan = 4;
+//	finChan = 4;
+//	flat = "no";
+//	namen = "";
+//	ztack = true;
+//	c = "1234";
+//	colArray = newArray("Cyan","Blue","Green","Red");
+//}
+//else if (henny == "normal E18") {
+//	numChan = 3;
+//	finChan = 3;
+//	flat = "yes";
+//	namen = "";
+//	ztack = true;
+//	c = "123";
+//	colArray = newArray("Green","Red","Blue");
+//}
+//
+//if(henny == "a-synuclein project") {
+//	run("Properties...", "channels=4 slices=6 frames=1 unit=micron pixel_width=0.1803752 pixel_height=0.1803752 voxel_depth=0.2891800");
+//	numChan = 4;
+//	finChan = 4;
+//	flat = "no";
+//	namen = "";
+//	ztack = true;
+//	c = "1234";
+//	colArray = newArray("Cyan","Blue","Green","Red");
+//}
+//
+
+//this is where the manual input of settings happens, the variables defined here would need to be defined
+//above if a preset were introduced
+
+if (henny == "custom")	{
+	selectImage(nImages);
+	Stack.getDimensions(width, height, numchannels, slices, frames);
+	numchannels = d2s(numchannels,0);
 	Dialog.create("Arrange Channels");
-		Dialog.addNumber("how many channels initially",0,0,1,"channel/s");
-		Dialog.addNumber("how many channels in final image",0,0,1,"channel/s");
+		Dialog.addNumber("how many channels initially",numchannels,0,1,"channel/s");
+		Dialog.addNumber("how many channels in final image",numchannels,0,1,"channel/s");
 		Dialog.addString("Final image as a flat RGB?","yes");
-		Dialog.addString("Suffix for all images?","_");
+		Dialog.addString("Suffix for all images?","");
 		Dialog.setInsets(0,200,0);
 		Dialog.addCheckbox("Z-stack",true);
 	Dialog.show();
@@ -51,6 +73,10 @@ else if (henny == "custom")	{
 	flat = Dialog.getString();
 	namen = Dialog.getString();
 	ztack = Dialog.getCheckbox();
+
+	//this is intended to be a guide for the next step, letting you have a direct reference for which channel is going to be
+	//converted to which color or maintained in the final image
+
 	Dialog.create("what colors\nare the channels");
 		channels = newArray("Green","Red","Blue","Cyan");
 		for(n=0;n<numChan;n++){
@@ -62,6 +88,11 @@ else if (henny == "custom")	{
 		chanArray = Array.concat(chanArray,Dialog.getChoice());
 	}
 	
+	//this is intended to allow you to change the channel color and pick which channels are included in order to prevent color related issues
+	//these include: analysis dependent color changes (i.e. green and red are analyzed, but one of your markers is in the far red/blue channel)
+	//a cyan channel in an RGB-flattened image (will contaminate the green/blue channels if split back into separate channels)
+	//you have four channels and want to include channels 1,3,4 and pick the colors you want them to be
+
 	Dialog.create("Arrange Channels");
 		string = "Current Channels\n";
 		for(n=0;n<numChan;n++) {
@@ -85,8 +116,15 @@ else if (henny == "custom")	{
 	}
 }
 
+//this is where the actual image processing starts
+
 for(i=nImages;i>0;i--){
 	selectImage(nImages);
+	Stack.getDimensions(width, height, bumchannels, slices, frames);
+	bumchannels = d2s(bumchannels,0);
+	if(numchannels != bumchannels){
+		waitForUser("Your image has a unique number of channels\nfrom the initial setting, please group them separately");
+	}
 	title = getTitle();
 	Dialog.create("Title");
 		Dialog.addMessage("Rename");
@@ -108,7 +146,8 @@ for(i=nImages;i>0;i--){
 		rename("MAX_close_me");
 	}
 	selectImage("MAX_close_me");
-	for(s=0;s<nSlices;s++) {
+	Stack.getDimensions(width, height, nochannels, slices, frames);
+	for(s=0;s<nochannels;s++) {
 		setSlice(s+1);
 		run(colArray[s]);
 	}
@@ -116,12 +155,19 @@ for(i=nImages;i>0;i--){
 	rename(title);
 	title = getTitle();
 	if (flat == "yes") {
-		run("Stack to RGB");
-		selectImage(title +" (RGB)");
+		run("Stack to RGB", "slices");
+		if(slices==1){
+			selectImage(title +" (RGB)");
+		}
+		else {
+			selectImage(title);
+		}
 		saveAs("Tiff",imagedir+title);
 		close();
-		selectImage(title);
-		close();
+		if(slices==1){
+			selectImage(title);
+			close();
+		}
 	} else {
 		saveAs("Tiff",imagedir+title);
 		close();
