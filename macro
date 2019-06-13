@@ -66,7 +66,7 @@ if (henny == "custom")	{
 		Dialog.addString("Final image as a flat RGB?","yes");
 		Dialog.addString("Suffix for all images?","");
 		Dialog.setInsets(0,200,0);
-		Dialog.addCheckbox("Z-stack",true);
+		Dialog.addCheckbox("Z-stack compression",true);
 	Dialog.show();
 	numChan = Dialog.getNumber();
 	finChan = Dialog.getNumber();
